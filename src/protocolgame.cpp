@@ -514,6 +514,7 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 		case 0x14: g_dispatcher.addTask(createTask(std::bind(&ProtocolGame::logout, getThis(), true, false))); break;
 		case 0x1D: addGameTask(&Game::playerReceivePingBack, player->getID()); break;
 		case 0x1E: addGameTask(&Game::playerReceivePing, player->getID()); break;
+		case 0x28: parseStashAction(msg); break;
 		case 0x32: parseExtendedOpcode(msg); break; //otclient extended opcode
 		case 0x64: parseAutoWalk(msg); break;
 		case 0x65: addGameTask(&Game::playerMove, player->getID(), DIRECTION_NORTH); break;
@@ -3225,6 +3226,75 @@ void ProtocolGame::AddShopItem(NetworkMessage& msg, const ShopInfo& item)
 	msg.add<uint32_t>(it.weight);
 	msg.add<uint32_t>(item.buyPrice);
 	msg.add<uint32_t>(item.sellPrice);
+}
+
+void ProtocolGame::parseStashAction(NetworkMessage& msg)
+{
+	Supply_Stash_Actions_t action = static_cast<Supply_Stash_Actions_t>(msg.getByte());
+	switch (action) {
+		case SUPPLY_STASH_ACTION_STOW_ITEM: {
+			Position pos = msg.getPosition();
+			uint16_t spriteId = msg.get<uint16_t>();
+			uint8_t stackpos = msg.getByte();
+			uint32_t count = static_cast<uint32_t>(msg.getByte());
+			g_game.playerStowItem(player, pos, spriteId, stackpos, count);
+			break;
+		}
+		case SUPPLY_STASH_ACTION_STOW_CONTAINER: {
+			Position pos = msg.getPosition();
+			uint16_t spriteId = msg.get<uint16_t>();
+			uint8_t stackpos = msg.getByte();
+			g_game.playerStowContainer(player, pos, spriteId, stackpos);
+			break;
+		}
+		case SUPPLY_STASH_ACTION_STOW_STACK: {
+			Position pos = msg.getPosition();
+			uint16_t spriteId = msg.get<uint16_t>();
+			uint8_t stackpos = msg.getByte();
+			g_game.playerStowStack(player, pos, spriteId, stackpos);
+			break;
+		}
+		case SUPPLY_STASH_ACTION_WITHDRAW: {
+			uint16_t spriteId = msg.get<uint16_t>();
+			uint32_t count = msg.get<uint32_t>();
+			uint8_t stackpos = msg.getByte(); // TODO: wtf is this variable
+			g_game.playerStashWithdraw(player, spriteId, count, stackpos);
+			break;
+		}
+		default: break;
+	}
+}
+
+void ProtocolGame::sendSupplyStash(std::map<uint16_t, uint32_t>& supplyStashItems)
+{
+	NetworkMessage msg;
+	msg.addByte(0x29);
+
+	uint16_t itemsToSend = std::min<size_t>(supplyStashItems.size(), 0x2710);
+	msg.add<uint16_t>(itemsToSend);
+
+	uint16_t i = 0;
+	for (std::map<uint16_t, uint32_t>::const_iterator it = supplyStashItems.begin(); i < itemsToSend; ++it, ++i) {
+		msg.addItemId(it->first);
+		msg.add<uint32_t>(it->second);
+	}
+
+	uint16_t maxSlots = static_cast<uint16_t>(g_config.getNumber(ConfigManager::MAX_SUPPLY_STASH_STOWED_ITEMS));
+	if (itemsToSend >= maxSlots) {
+		msg.add<uint16_t>(0);
+	} else {
+		msg.add<uint16_t>(maxSlots - itemsToSend);
+	}
+
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendSpecialContainersAvailable(bool supplyStashAvailable, bool marketAvailable)
+{
+	NetworkMessage msg;
+	msg.addByte(0x2A);
+	msg.addByte((supplyStashAvailable || marketAvailable) ? 0x01 : 0x00);
+	writeToOutputBuffer(msg);
 }
 
 void ProtocolGame::parseExtendedOpcode(NetworkMessage& msg)

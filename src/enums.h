@@ -515,6 +515,13 @@ struct LightInfo {
 	constexpr LightInfo(uint8_t level, uint8_t color) : level(level), color(color) {}
 };
 
+enum Supply_Stash_Actions_t : uint8_t {
+	SUPPLY_STASH_ACTION_STOW_ITEM = 0,
+	SUPPLY_STASH_ACTION_STOW_CONTAINER = 1,
+	SUPPLY_STASH_ACTION_STOW_STACK = 2,
+	SUPPLY_STASH_ACTION_WITHDRAW = 3
+};
+
 struct ShopInfo {
 	uint16_t itemId;
 	int32_t subType;

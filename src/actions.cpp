@@ -529,6 +529,12 @@ bool enterMarket(Player* player, Item*, const Position&, Thing*, const Position&
 	return true;
 }
 
+bool enterStash(Player* player, Item*, const Position&, Thing*, const Position&, bool)
+{
+	player->sendSupplyStash();
+	return true;
+}
+
 }
 
 bool Action::loadFunction(const pugi::xml_attribute& attr, bool isScripted)
@@ -536,6 +542,8 @@ bool Action::loadFunction(const pugi::xml_attribute& attr, bool isScripted)
 	const char* functionName = attr.as_string();
 	if (strcasecmp(functionName, "market") == 0) {
 		function = enterMarket;
+	} else if (strcasecmp(functionName, "stash") == 0) {
+		function = enterStash;
 	} else {
 		if (!isScripted) {
 			std::cout << "[Warning - Action::loadFunction] Function \"" << functionName << "\" does not exist." << std::endl;

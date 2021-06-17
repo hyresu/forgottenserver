@@ -304,6 +304,10 @@ class ProtocolGame final : public Protocol
 		//otclient
 		void parseExtendedOpcode(NetworkMessage& msg);
 
+		void parseStashAction(NetworkMessage& msg);
+		void sendSupplyStash(std::map<uint16_t, uint32_t>& supplyStashItems);
+		void sendSpecialContainersAvailable(bool supplyStashAvailable, bool marketAvailable);
+
 		friend class Player;
 
 		// Helpers so we don't need to bind every time

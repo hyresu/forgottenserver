@@ -922,6 +922,15 @@ class LuaScriptInterface
 		static int luaPlayerGetGroup(lua_State* L);
 		static int luaPlayerSetGroup(lua_State* L);
 
+		static int luaPlayerIsSupplyStashAvailable(lua_State* L);
+		static int luaPlayerIsMarketAvailable(lua_State* L);
+		static int luaPlayerSetSpecialContainersAvailable(lua_State* L);
+
+		static int luaPlayerGetStashItemCount(lua_State* L);
+		static int luaPlayerAddStashItem(lua_State* L);
+		static int luaPlayerRemoveStashItem(lua_State* L);
+		static int luaPlayerOpenStash(lua_State* L);
+
 		static int luaPlayerGetStamina(lua_State* L);
 		static int luaPlayerSetStamina(lua_State* L);
 

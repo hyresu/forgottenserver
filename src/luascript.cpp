@@ -8896,6 +8896,101 @@ int LuaScriptInterface::luaPlayerSetGroup(lua_State* L)
 	return 1;
 }
 
+int LuaScriptInterface::luaPlayerIsSupplyStashAvailable(lua_State* L)
+{
+	// player:isSupplyStashAvailable()
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushboolean(L, player->isSupplyStashAvailable());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerIsMarketAvailable(lua_State* L)
+{
+	// player:isMarketAvailable()
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushboolean(L, player->isMarketAvailable());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerSetSpecialContainersAvailable(lua_State* L)
+{
+	// player:setSpecialContainersAvailable(supplyStashAvailable, marketAvailable)
+	bool marketAvailable = getBoolean(L, 3);
+	bool supplyStashAvailable = getBoolean(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		player->setSupplyStashAvailable(supplyStashAvailable);
+		player->setMarketAvailable(marketAvailable);
+		player->sendSpecialContainersAvailable(supplyStashAvailable, marketAvailable);
+		pushBoolean(L, true);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetStashItemCount(lua_State* L)
+{
+	// player:getStashItemCount(itemId)
+	uint16_t itemId = getNumber<uint16_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushnumber(L, player->getStashItemCount(itemId));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerAddStashItem(lua_State* L)
+{
+	// player:addStashItem(itemId, itemCount)
+	uint32_t itemCount = getNumber<uint32_t>(L, 3);
+	uint16_t itemId = getNumber<uint16_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		pushBoolean(L, player->addStashItem(itemId, itemCount));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerRemoveStashItem(lua_State* L)
+{
+	// player:removeStashItem(itemId, itemCount)
+	uint32_t itemCount = getNumber<uint32_t>(L, 3);
+	uint16_t itemId = getNumber<uint16_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		pushBoolean(L, player->removeStashItem(itemId, itemCount));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerOpenStash(lua_State* L)
+{
+	// player:openStash()
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		player->sendSupplyStash();
+		pushBoolean(L, true);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
 int LuaScriptInterface::luaPlayerGetStamina(lua_State* L)
 {
 	// player:getStamina()

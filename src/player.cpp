@@ -805,6 +805,7 @@ DepotLocker* Player::getDepotLocker(uint32_t depotId)
 	it->second->setDepotId(depotId);
 	it->second->internalAddThing(Item::CreateItem(ITEM_MARKET));
 	it->second->internalAddThing(inbox);
+	it->second->internalAddThing(Item::CreateItem(ITEM_SUPPLY_STASH));
 	it->second->internalAddThing(getDepotChest(depotId, true));
 	return it->second.get();
 }
@@ -3954,6 +3955,46 @@ bool Player::hasLearnedInstantSpell(const std::string& spellName) const
 
 	for (const auto& learnedSpellName : learnedInstantSpellList) {
 		if (strcasecmp(learnedSpellName.c_str(), spellName.c_str()) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+uint32_t Player::getStashItemCount(uint16_t itemId) const
+{
+	auto it = stashItems.find(itemId);
+	if (it != stashItems.end()) {
+		return it->second;
+	}
+	return 0;
+}
+
+bool Player::addStashItem(uint16_t itemId, uint32_t itemCount)
+{
+	// just in-case check for possible overflow
+	auto it = stashItems.find(itemId);
+	if (it != stashItems.end()) {
+		if (it->second > std::numeric_limits<decltype(itemCount)>::max() - itemCount) {
+			return false; // overflow
+		} else {
+			it->second += itemCount;
+			return true;
+		}
+	}
+	stashItems[itemId] = itemCount;
+	return true;
+}
+
+bool Player::removeStashItem(uint16_t itemId, uint32_t itemCount)
+{
+	auto it = stashItems.find(itemId);
+	if (it != stashItems.end()) {
+		if (it->second == itemCount) {
+			stashItems.erase(it);
+			return true;
+		} else if (it->second > itemCount) {
+			it->second -= itemCount;
 			return true;
 		}
 	}

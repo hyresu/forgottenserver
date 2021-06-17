@@ -361,6 +361,27 @@ class Player final : public Creature, public Cylinder
 			return inMarket;
 		}
 
+		void setSupplyStashAvailable(bool value) {
+			supplyStashAvailable = value;
+		}
+		bool isSupplyStashAvailable() const {
+			return supplyStashAvailable;
+		}
+		void setMarketAvailable(bool value) {
+			marketAvailable = value;
+		}
+		bool isMarketAvailable() const {
+			return marketAvailable;
+		}
+
+		std::map<uint16_t, uint32_t> getStashItems() {
+			return stashItems;
+		}
+		size_t getStashItemCount() const {return stashItems.size();}
+		uint32_t getStashItemCount(uint16_t itemId) const;
+		bool addStashItem(uint16_t itemId, uint32_t itemCount);
+		bool removeStashItem(uint16_t itemId, uint32_t itemCount);
+
 		void setLastDepotId(int16_t newId) {
 			lastDepotId = newId;
 		}
@@ -1061,6 +1082,16 @@ class Player final : public Creature, public Cylinder
 				client->sendWorldLight(lightInfo);
 			}
 		}
+		void sendSupplyStash() {
+			if (client) {
+				client->sendSupplyStash(stashItems);
+			}
+		}
+		void sendSpecialContainersAvailable(bool supplyStashAvailable, bool marketAvailable) {
+			if (client) {
+				client->sendSpecialContainersAvailable(supplyStashAvailable, marketAvailable);
+			}
+		}
 		void sendChannelsDialog() {
 			if (client) {
 				client->sendChannelsDialog();
@@ -1202,6 +1233,8 @@ class Player final : public Creature, public Cylinder
 		std::unordered_set<uint32_t> attackedSet;
 		std::unordered_set<uint32_t> VIPList;
 
+		std::map<uint16_t, uint32_t> stashItems;
+
 		std::map<uint8_t, OpenContainer> openContainers;
 		std::map<uint32_t, DepotLocker_ptr> depotLockerMap;
 		std::map<uint32_t, DepotChest*> depotChests;
@@ -1316,6 +1349,8 @@ class Player final : public Creature, public Cylinder
 		bool isConnecting = false;
 		bool addAttackSkillPoint = false;
 		bool inventoryAbilities[CONST_SLOT_LAST + 1] = {};
+		bool supplyStashAvailable = false;
+		bool marketAvailable = false;
 
 		static uint32_t playerAutoID;
 
